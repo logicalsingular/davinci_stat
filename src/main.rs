@@ -1,21 +1,25 @@
 use std::collections::HashSet;
 
 struct Total {
-    likes: u32,
+    put_likes: u32,
     dislikes: u32,
     messages: u32,
+    maches: u32,
+    liked: u32,
     unique_ankets: HashSet<String>,
 } 
 
 fn main() {
     let mut total = Total {
-        likes: 0,
+        put_likes: 0,
         dislikes: 0,
         messages: 0,
+        maches: 0,
+        liked: 0,
         unique_ankets: HashSet::new(),
     };
 
-    let path = String::from("C:\\Users\\rr\\Desktop\\result.json");
+    let path = String::from("C:\\Users\\logic\\Desktop\\result.json");
     let json = get_data(path);
     let json = json["messages"].clone();
 
@@ -35,31 +39,31 @@ fn main() {
     println!("Анкет понравилось 👍:{}
 Отправлено сообщений 💌: {}
 Не понравилось 👎: {}
-Уникальных анкет: {}",total.likes, total.messages, total.dislikes, ankets);
-
-    // "Есть взаимная симпатия! Начинай общаться 👉 "
+Уникальных анкет: {}
+Взаимных симпатий 👉: {}
+Ты понравился, и вы начали общение ❤️: {}",total.put_likes, total.messages, total.dislikes, ankets, total.maches, total.liked);
 }
 
 fn calculate(block: &serde_json::Map<String, serde_json::Value>,total: &mut Total) {
    if block["text"].eq("👍") {
-        total.likes += 1;
+        total.put_likes += 1;
     } else if block["text"].eq("💌") {
         total.messages += 1;
     } else if block["text"].eq("👎") {
         total.dislikes +=1;
+    } else if block["text"][0].eq("Есть взаимная симпатия! Начинай общаться 👉 "){
+        total.maches +=1;
+    } else if block["text"][0].eq("Отлично! Надеюсь хорошо проведете время ;) Начинай общаться 👉 "){
+        total.liked +=1;
     } else if block.contains_key("photo") || block.contains_key("media_type") {
-
-        // total.unique_ankets.insert(String::from(block["text"].as_str().unwrap()));
-        if let Some(data_block) = block["text"].as_str() {
-            total.unique_ankets.insert(serde_json::to_string(data_block).unwrap());
-        } else if let Some(data_block) = block["text"].as_array() {
-                    /////////////////// we need calculate unique ankets. May be use enum. It will consist from string or array
-        } else {
-            println!("Error");
+        
+        if let Some(string_block) = block["text"].as_str() {
+            total.unique_ankets.insert(serde_json::to_string(string_block).unwrap());
+        } else if let Some(arr_block) = block["text"].as_array() {
+                // iterate array, that concatinate strings. If concatinated string is object, get     
         }
 
     }
-    // } else { println!("{:?}",block["text"])}
 }
 
 fn get_data(path: String) -> serde_json::Value {
